@@ -1,11 +1,12 @@
 import React from 'react';
+import {TodoListsList} from '../features/TodoLists/TodoListsList';
 
-import {TodoLists} from '../features/TodoLists/TodoLists';
+
 
 function App() {
   return <>
       <div style={{padding: '20px'}} className="App">
-          <TodoLists/>
+          <TodoListsList/>
       </div>
   </>
 

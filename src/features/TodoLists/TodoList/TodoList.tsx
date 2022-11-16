@@ -1,112 +1,112 @@
-import React, {MouseEvent, useState} from 'react';
-import {todoListAPI} from '../../../api/todoList-api';
-import {Tasks, UpdateDomainTaskModelType} from './Tasks/Tasks';
-import {useAppDispatch} from '../../../app/store';
-import {addTodoListTC, changeTodoListTC, deleteTodoListTC} from '../todoLists-reducer';
+import React, {ChangeEvent, KeyboardEvent, MouseEvent, useCallback, useEffect, useState} from 'react';
+
+import {EditableSpan} from '../../../components/EditableSpan/EditableSpan';
+import {Task} from './Task/Task';
+import {useSelector} from 'react-redux';
+import {AppRootStateType, useAppDispatch} from '../../../app/store';
+import {fetchTasksAC} from './Task/tasks-reducer';
+
 
 
 type PropsType = {
-    todoLists: any
+    titleTodoList: string
+    todoListId: string
+    updateCheckboxCB: (todoListId: string, taskId: string, status: number) => void
+    createTaskCB: (todoListId: string, title: string) => void
+    deleteTaskCB: (todoListId: string, taskId: string) => void
+    changeTitleTodoListCB: (todoListId: string, title: string) => void
+    deleteTodoListCB: (todoListId: string) => void
+    changeTitle: (title: string) => void
+
+
 }
 
-export const TodoList: React.FC<PropsType> = ({todoLists}) => {
+export const TodoList: React.FC<PropsType> = ({
+                                                  deleteTodoListCB,
+                                                  changeTitle,
+                                                  titleTodoList,
+                                                  todoListId,
+                                                  deleteTaskCB,
+                                                  createTaskCB,
+                                                  updateCheckboxCB,
+
+                                              }) => {
+
+    let tasks = useSelector<AppRootStateType, Array<any>>((state) => state.tasks[todoListId])
     const dispatch = useAppDispatch()
-    let [title, setTitle] = useState<string>('')
+    useEffect(() => {
+        dispatch(fetchTasksAC(todoListId))
+    }, [todoListId])
 
-    const addTitle = () => {
-        dispatch(addTodoListTC(title))
+
+    const deleteTodoList = (e: MouseEvent<HTMLButtonElement>) => {
+        deleteTodoListCB(todoListId)
+    }
+    const updateCheckbox = (taskId: string, status: number) => {
+        updateCheckboxCB(todoListId, taskId, status)
+    }
+    const createTaskTitleCB = useCallback((title: string) => {
+        createTaskCB(todoListId, title)
+    }, [])
+
+    const deleteTask = (taskId: string) => {
+        deleteTaskCB(todoListId, taskId)
     }
 
-    const addTask = (id: string, title: string) => {
-        todoListAPI.createTask(id, title)
-    }
 
-    const deleteTask = (id: string, taskId: string) => {
-        todoListAPI.deleteTask(id, taskId)
-    }
-
-//@ts-ignore
-    let todoList = todoLists.map(tl => {
-        const changeTitle = (title: string) => {
-            dispatch(changeTodoListTC(tl.id, title))
-        }
-        const deleteTodoList = (e: MouseEvent<HTMLButtonElement>) => {
-            dispatch(deleteTodoListTC(tl.id))
-        }
-        const changeTitleCB = (taskId: string, title: string) => {
-            const model: UpdateDomainTaskModelType = {
-                deadline: '',
-                description: '',
-                priority: 0,
-                startDate: '',
-                status: 1,
-                title: title,
-            }
-            todoListAPI.updateTask(tl.id, taskId, model)
-        }
-        const addTaskTitleCB = (title: string) => {
-            addTask(tl.id, title)
-        }
-        const deleteTaskCB = (taskId: string) => {
-            deleteTask(tl.id, taskId)
-        }
-
-        return <div key={tl.id}>
-            <div
-                 style={{border: 'solid', flexDirection: 'column', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-                <div style={{border: 'solid', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-                    <EditableSpan title={tl.title} changeTitleCB={changeTitle}/>
-                    <button onClick={deleteTodoList}>X</button>
-                </div>
-                <Tasks deleteTaskCB={deleteTaskCB} todoListId={tl.id} addTaskTitleCB={addTaskTitleCB}
-                       changeTitleCB={changeTitleCB}/>
-            </div>
-
-        </div>
+    const taskMain = tasks?.map(t =>{
+        return (
+                <Task key={t.id} task={t} updateCheckbox={updateCheckbox} todoListId={todoListId}
+                      deleteTaskCB={deleteTask}
+                />
+        )
     })
+
+    let [taskText, setTaskText] = useState<string>('')
+
+    const createTaskText = (e: ChangeEvent<HTMLInputElement>) => {
+        setTaskText(e.currentTarget.value)
+    }
+    const addTaskTitleHandler = () => {
+        if (taskText.trim()) {
+            createTaskTitleCB(taskText)
+            setTaskText('')
+        }
+    }
+
+    const keyPressH = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (taskText.trim()) {
+            if (e.key === 'Enter') {
+                createTaskTitleCB(taskText)
+                setTaskText('')
+            }
+        }
+    }
+
 
     return (
         <div>
-            <div>{title}</div>
-            <br/>
-            <input onChange={(e) => {
-                setTitle(e.currentTarget.value)
-            }} type="text"/>
-            <button onClick={addTitle}>Add</button>
-            <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-                {todoList}
+            <div style={{display: 'flex', flexDirection: 'column', gap: '10px', flexWrap: 'wrap'}}>
+                <div style={{display: 'flex', gap: '10px'}}>
+                    <EditableSpan title={titleTodoList} changeTitleCB={changeTitle}/>
+                    <button onClick={deleteTodoList}>X</button>
+                </div>
+                <div>
+                    <input onChange={createTaskText} value={taskText} type="text" onKeyPress={keyPressH}/>
+                    <button onClick={addTaskTitleHandler}>Add Task</button>
+                </div>
+                {taskMain}
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <button>All</button>
+                    <button>Active</button>
+                    <button>Completed</button>
+                </div>
+
             </div>
+
         </div>
     );
 }
 
-type EditableSpanType = {
-    title: string
-    changeTitleCB: (title: string) => void
-}
-
-export const EditableSpan: React.FC<EditableSpanType> = ({changeTitleCB, ...props}) => {
-    let [editMode, setEditMode] = useState<boolean>(false)
-    let [title, setTitle] = useState<string>(props.title)
-
-
-    const changeTitle = () => {
-        changeTitleCB(title)
-        setEditMode(false)
-    }
-    return <>
-        <span>
-            <span>
-                {editMode
-                    ? <input onBlur={changeTitle} onChange={(e) => {
-                        setTitle(e.currentTarget.value)
-                    }} value={title}/>
-                    : <div onClick={() => {
-                        setEditMode(true)
-                    }}><b>{title}</b></div>}
-                </span>
-        </span>
-    </>
-}
 
 

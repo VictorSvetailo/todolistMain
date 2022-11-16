@@ -1,5 +1,5 @@
 import axios from "axios";
-import {UpdateDomainTaskModelType} from '../features/TodoLists/TodoList/Tasks/Tasks';
+import {UpdateDomainTaskModelType} from '../features/TodoLists/TodoList/Task/Task';
 
 const settings = {
     // чтобы cookies не терялась нужно добавлять withCredentials
@@ -38,9 +38,19 @@ export const todoListAPI = {
     deleteTask(todolistId: string, taskId: string){
         return instance.delete(`todo-lists/${todolistId}/tasks/${taskId}`)
     },
-    updateTask(todoListId: string, taskId: string, model: UpdateDomainTaskModelType) {
+    updateTask(todoListId: string, taskId: string, model: UpdateTaskModelType) {
         return instance.put<ResponseType>(`todo-lists/${todoListId}/tasks/${taskId}`, model);
     },
+}
+
+
+export type UpdateTaskModelType = {
+    title: string
+    description: string
+    status: 0 | 2
+    priority: number
+    startDate: string
+    deadline: string
 }
 
 // - types -
