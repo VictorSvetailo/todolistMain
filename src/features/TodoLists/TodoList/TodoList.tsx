@@ -5,7 +5,7 @@ import {Task} from './Task/Task';
 import {useSelector} from 'react-redux';
 import {AppRootStateType, useAppDispatch} from '../../../app/store';
 import {fetchTasksAC} from './Task/tasks-reducer';
-
+import {FilterValuesType} from '../TodoListsList';
 
 
 type PropsType = {
@@ -17,11 +17,15 @@ type PropsType = {
     changeTitleTodoListCB: (todoListId: string, title: string) => void
     deleteTodoListCB: (todoListId: string) => void
     changeTitle: (title: string) => void
+    changeFilterCB: (todoListId: string, filter: FilterValuesType) => void
+    todoList: any
 
 
 }
 
 export const TodoList: React.FC<PropsType> = ({
+                                                  changeFilterCB,
+                                                  todoList,
                                                   deleteTodoListCB,
                                                   changeTitle,
                                                   titleTodoList,
@@ -54,11 +58,20 @@ export const TodoList: React.FC<PropsType> = ({
     }
 
 
-    const taskMain = tasks?.map(t =>{
+    let taskFilter = tasks
+    if (todoList.filter === 'active') {
+        taskFilter = tasks.filter(t => t.status === 0)
+    }
+    if (todoList.filter === 'completed') {
+        taskFilter = tasks.filter(t => t.status === 2)
+    }
+
+
+    const taskMain = taskFilter?.map(t => {
         return (
-                <Task key={t.id} task={t} updateCheckbox={updateCheckbox} todoListId={todoListId}
-                      deleteTaskCB={deleteTask}
-                />
+            <Task key={t.id} task={t} updateCheckbox={updateCheckbox} todoListId={todoListId}
+                  deleteTaskCB={deleteTask}
+            />
         )
     })
 
@@ -83,6 +96,10 @@ export const TodoList: React.FC<PropsType> = ({
         }
     }
 
+    const onAllClickHandler = useCallback(() => changeFilterCB(todoList.id, 'all'), [todoList.id, changeFilterCB])
+    const onActiveClickHandler = useCallback(() => changeFilterCB(todoList.id, 'active'), [todoList.id, changeFilterCB])
+    const onCompletedClickHandler = useCallback(() => changeFilterCB(todoList.id, 'completed'), [todoList.id, changeFilterCB])
+
 
     return (
         <div>
@@ -97,9 +114,9 @@ export const TodoList: React.FC<PropsType> = ({
                 </div>
                 {taskMain}
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <button>All</button>
-                    <button>Active</button>
-                    <button>Completed</button>
+                    <button style={todoList.filter === 'all' ? {background: 'black', color: 'white'}: {background: 'white', color: 'black'}} onClick={onAllClickHandler}>All</button>
+                    <button style={todoList.filter === 'active' ? {background: 'black' , color: 'white'}: {background: 'white' , color: 'black'}} onClick={onActiveClickHandler}>Active</button>
+                    <button style={todoList.filter === 'completed' ? {background: 'black' , color: 'white'}: {background: 'white' , color: 'black'}} onClick={onCompletedClickHandler}>Completed</button>
                 </div>
 
             </div>

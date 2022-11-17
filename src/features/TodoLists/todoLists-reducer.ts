@@ -1,5 +1,6 @@
 import {Dispatch} from 'redux';
 import {todoListAPI, TodoListType} from '../../api/todoList-api';
+import {FilterValuesType} from './TodoListsList';
 
 const initialState: Array<any> = [];
 
@@ -16,8 +17,9 @@ export const todoListsReducer = (state = initialState, action: any): any => {
             //@ts-ignore
             return state.filter(tl => tl.id !== action.todoListId)
         case 'CHANGE_TODOLIST_TITLE':
-            //@ts-ignore
             return state.filter(tl => tl.id === action.todoListId ? {...tl, title: action.title}: tl)
+        case 'CHANGE_FILTER_TODOLIST':
+            return state.map(tl => tl.id === action.todoListId ? {...tl, filter: action.filter}: tl)
         default:
             return state;
     }
@@ -49,7 +51,13 @@ const changeTodoListAC = (todoListId: string, title: string) => {
         title
     }
 }
-
+export const changeFilter = (todoListId: string, filter: FilterValuesType) => {
+    return {
+        type: 'CHANGE_FILTER_TODOLIST',
+        todoListId,
+        filter,
+    }
+}
 
 // Thank Create
 export const fetchTodoListTC = () => (dispatch: Dispatch) => {

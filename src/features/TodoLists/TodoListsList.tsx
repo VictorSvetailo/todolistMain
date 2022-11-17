@@ -2,7 +2,7 @@ import React, {KeyboardEvent, useCallback, useEffect, useState} from 'react';
 import {todoListAPI} from '../../api/todoList-api';
 import {TodoList} from './TodoList/TodoList';
 import {AppRootStateType, useAppDispatch} from '../../app/store';
-import {addTodoListTC, changeTodoListTC, deleteTodoListTC, fetchTodoListTC} from './todoLists-reducer';
+import {addTodoListTC, changeFilter, changeTodoListTC, deleteTodoListTC, fetchTodoListTC} from './todoLists-reducer';
 import {useSelector} from 'react-redux';
 import {addTaskTC, changeTaskTC, deleteTaskTC} from './TodoList/Task/tasks-reducer';
 import {EditableSpan} from '../../components/EditableSpan/EditableSpan';
@@ -33,6 +33,10 @@ export const TodoListsList = () => {
         dispatch(addTaskTC(todoListId, title))
     }, [])
 
+    const changeFilterCB = useCallback((todoListId: string, filter: FilterValuesType) => {
+        dispatch(changeFilter(todoListId, filter))
+    }, [])
+
     const deleteTaskCB = (todoListId: string, taskId: string) => {
         dispatch(deleteTaskTC(todoListId, taskId))
     }
@@ -53,6 +57,7 @@ export const TodoListsList = () => {
             <div style={{border: 'solid', flexDirection: 'column', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
                 <div style={{border: 'solid', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
                     <TodoList
+                        todoList={tl}
                         titleTodoList={tl.title}
                         changeTitle={changeTitle}
                         todoListId={tl.id}
@@ -61,7 +66,7 @@ export const TodoListsList = () => {
                         deleteTaskCB={deleteTaskCB}
                         createTaskCB={createTaskCB}
                         updateCheckboxCB={updateCheckboxCB}
-                        // taskFilter={taskFilter}
+                        changeFilterCB={changeFilterCB}
                     />
                 </div>
             </div>
@@ -96,4 +101,4 @@ export const TodoListsList = () => {
 
 
 
-export type TaskFilterType = 'all' | 'active' | 'completed'
+export type FilterValuesType = 'all' | 'active' | 'completed'
