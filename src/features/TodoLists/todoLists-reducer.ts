@@ -1,6 +1,8 @@
 import {Dispatch} from 'redux';
 import {todoListAPI, TodoListType} from '../../api/todoList-api';
 import {FilterValuesType} from './TodoListsList';
+import {fetchTasksAC} from './TodoList/Task/tasks-reducer';
+import {setAppStatusAC} from '../../app/app-reducer';
 
 const initialState: Array<any> = [];
 
@@ -17,9 +19,11 @@ export const todoListsReducer = (state = initialState, action: any): any => {
             //@ts-ignore
             return state.filter(tl => tl.id !== action.todoListId)
         case 'CHANGE_TODOLIST_TITLE':
-            return state.filter(tl => tl.id === action.todoListId ? {...tl, title: action.title}: tl)
+            return state.filter(tl => tl.id === action.todoListId ? {...tl, title: action.title} : tl)
         case 'CHANGE_FILTER_TODOLIST':
-            return state.map(tl => tl.id === action.todoListId ? {...tl, filter: action.filter}: tl)
+            return state.map(tl => tl.id === action.todoListId ? {...tl, filter: action.filter} : tl)
+        case 'CLEAR_DATA':
+            return []
         default:
             return state;
     }
@@ -59,33 +63,61 @@ export const changeFilter = (todoListId: string, filter: FilterValuesType) => {
     }
 }
 
+
+// при вылогировании использовать
+export const clearTodoListDataAC  = () => {
+    return {type: 'CLEAR_DATA'}
+}
+
 // Thank Create
-export const fetchTodoListTC = () => (dispatch: Dispatch) => {
+
+
+export const fetchTodoListTC = () => (dispatch: any) => {
+    dispatch(setAppStatusAC('loading'))
     todoListAPI.getTodoLists()
         .then((res) => {
             dispatch(setTodoListAC(res.data))
+            dispatch(setAppStatusAC('succeeded'))
+            return res.data
+        })
+        .then((todoLists) => {
+            todoLists.forEach((tl) => {
+                dispatch(fetchTasksAC(tl.id))
+            })
+        })
+        .catch((error)=>{
+            alert(error)
         })
 }
 
 export const addTodoListTC = (title: string) => (dispatch: Dispatch) => {
+    dispatch(setAppStatusAC('loading'))
     todoListAPI.createTodoList(title)
         .then((res) => {
             dispatch(addTodoListAC(res.data.data.item))
+            dispatch(setAppStatusAC('succeeded'))
         })
 }
 
 export const deleteTodoListTC = (todoListId: string) => (dispatch: Dispatch) => {
+    dispatch(setAppStatusAC('loading'))
     todoListAPI.deleteTodoList(todoListId)
         .then((res) => {
             dispatch(deleteTodoListAC(todoListId))
+            dispatch(setAppStatusAC('succeeded'))
         })
 }
 
 export const changeTodoListTC = (todoListId: string, title: string) => (dispatch: Dispatch) => {
+    dispatch(setAppStatusAC('loading'))
     todoListAPI.updateTodoList(todoListId, title)
         .then((res) => {
             dispatch(changeTodoListAC(todoListId, title))
+            dispatch(setAppStatusAC('succeeded'))
         })
 }
+
+
+export type ClearDataActionType = ReturnType<typeof clearTodoListDataAC>
 
 

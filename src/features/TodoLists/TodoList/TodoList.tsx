@@ -6,6 +6,7 @@ import {useSelector} from 'react-redux';
 import {AppRootStateType, useAppDispatch} from '../../../app/store';
 import {fetchTasksAC} from './Task/tasks-reducer';
 import {FilterValuesType} from '../TodoListsList';
+import {TaskType, TodoListType} from '../../../api/todoList-api';
 
 
 type PropsType = {
@@ -18,7 +19,7 @@ type PropsType = {
     deleteTodoListCB: (todoListId: string) => void
     changeTitle: (title: string) => void
     changeFilterCB: (todoListId: string, filter: FilterValuesType) => void
-    todoList: any
+    todoList: TodoListType
 
 
 }
@@ -38,9 +39,9 @@ export const TodoList: React.FC<PropsType> = ({
 
     let tasks = useSelector<AppRootStateType, Array<any>>((state) => state.tasks[todoListId])
     const dispatch = useAppDispatch()
-    useEffect(() => {
-        dispatch(fetchTasksAC(todoListId))
-    }, [todoListId])
+    // useEffect(() => {
+    //     dispatch(fetchTasksAC(todoListId))
+    // }, [todoListId])
 
 
     const deleteTodoList = (e: MouseEvent<HTMLButtonElement>) => {
@@ -60,12 +61,11 @@ export const TodoList: React.FC<PropsType> = ({
 
     let taskFilter = tasks
     if (todoList.filter === 'active') {
-        taskFilter = tasks.filter(t => t.status === 0)
+        taskFilter = taskFilter.filter(t => t.status === 0)
     }
     if (todoList.filter === 'completed') {
-        taskFilter = tasks.filter(t => t.status === 2)
+        taskFilter = taskFilter.filter(t => t.status === 2)
     }
-
 
     const taskMain = taskFilter?.map(t => {
         return (

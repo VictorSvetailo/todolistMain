@@ -6,6 +6,7 @@ import {addTodoListTC, changeFilter, changeTodoListTC, deleteTodoListTC, fetchTo
 import {useSelector} from 'react-redux';
 import {addTaskTC, changeTaskTC, deleteTaskTC} from './TodoList/Task/tasks-reducer';
 import {EditableSpan} from '../../components/EditableSpan/EditableSpan';
+import {Navigate} from 'react-router-dom';
 
 
 export const TodoListsList = () => {
@@ -13,7 +14,13 @@ export const TodoListsList = () => {
     const dispatch = useAppDispatch()
     let [title, setTitle] = useState<string>('')
 
+    const isLoggedIn = useSelector<AppRootStateType, boolean>(state => state.auth.isLoggedIn)
+
+
     useEffect(() => {
+        if (!isLoggedIn) {
+            return
+        }
         dispatch(fetchTodoListTC())
     }, [])
 
@@ -22,7 +29,7 @@ export const TodoListsList = () => {
         dispatch(changeTaskTC(todoListId, taskId, {status}))
     }
     const createTodoList = () => {
-        if(title.trim()){
+        if (title.trim()) {
             dispatch(addTodoListTC(title))
             setTitle('')
         }
@@ -48,6 +55,9 @@ export const TodoListsList = () => {
         dispatch(deleteTodoListTC(todoListId))
     }
 
+    if (!isLoggedIn) {
+        return <Navigate to={'/login'}/>
+    }
 
     let todoListMain = todoLists.map((tl: any) => {
         const changeTitle = (title: string) => {
@@ -97,8 +107,6 @@ export const TodoListsList = () => {
 
     </>
 }
-
-
 
 
 export type FilterValuesType = 'all' | 'active' | 'completed'
